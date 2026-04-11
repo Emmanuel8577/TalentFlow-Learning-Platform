@@ -1,8 +1,9 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('./auth.model'); // Your DB connection file
+const sequelize = require('../../config/db'); 
+
 
 const User = sequelize.define('User', {
-    username: {
+    name: { 
         type: DataTypes.STRING,
         allowNull: false
     },
@@ -20,12 +21,13 @@ const User = sequelize.define('User', {
         type: DataTypes.ENUM('learner', 'instructor', 'admin'),
         defaultValue: 'learner'
     },
-    isVerified: {
+    is_verified: {
         type: DataTypes.BOOLEAN,
         defaultValue: false
     }
 }, {
-    timestamps: true
+    timestamps: true,
+    tableName: 'users'
 });
 
 module.exports = User;
