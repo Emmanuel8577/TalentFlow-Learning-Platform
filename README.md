@@ -1,91 +1,55 @@
-TalentFlow Learning Platform (Backend)
-TalentFlow is a robust, scalable Learning Management System (LMS) backend built with the MERN stack (Node.js/Express focus) and PostgreSQL. It is designed to empower instructors and students through automated assignment management, progress tracking, and secure authentication.
+# TalentFlow Learning Platform - Backend
 
-🛠️ Tech Stack
-Runtime: Node.js
+A robust, containerized RESTful API built for a multilingual learning management system. This backend handles secure authentication, instructor/learner role management, and real-time OTP verification.
 
-Framework: Express.js
+## 🚀 Live Links
+- **Production API:** [https://talentflow-backend-4dd1.onrender.com](https://talentflow-backend-4dd1.onrender.com)
+- **Interactive API Documentation:** [https://talentflow-backend-4dd1.onrender.com/api-docs](https://talentflow-backend-4dd1.onrender.com/api-docs)
 
-Database: PostgreSQL (with Sequelize/Raw Queries)
+## 🛠️ Tech Stack & Infrastructure
+- **Runtime:** Node.js / Express
+- **Database:** PostgreSQL (Relational Data)
+- **Caching/OTP:** Upstash Redis
+- **Containerization:** Docker & Docker Hub
+- **Deployment:** Render (Web Service)
+- **Documentation:** Swagger UI (OpenAPI 3.0)
+- **Security:** JWT, Bcrypt, and Role-Based Access Control (RBAC)
 
-Caching & OTP: Redis
+## 🐳 Docker Deployment
+This project is fully containerized to ensure environment consistency. 
+To run this project locally using Docker:
+```bash
+docker pull emmanuel8577/talentflow-backend:v11
+docker run -p 5000:5000 --env-file .env emmanuel8577/talentflow-backend:v11
+🔐 Security Features
+Restricted Admin Creation: Admin accounts cannot be created via public endpoints. They are managed through an internal CLI seeding script to prevent privilege escalation.
 
-Authentication: JWT (JSON Web Tokens) with 3-step Password Reset
+OTP Verification: Registration is protected by a 6-digit OTP sent via email and validated against a Redis cache with a 10-minute expiry.
 
-Documentation: Swagger UI
-
-Deployment: Railway / Render
-
-✨ Key Features
-🔐 Advanced Authentication
-OTP-Only Verification: Optimized "Forgot Password" flow using Redis for high-speed OTP validation.
-
-Secure Reset: Short-lived JWT resetToken strategy to ensure password changes are authorized and secure.
-
-Role-Based Access (RBAC): Middleware-driven permissions for Student, Instructor, and Admin.
-
-📚 Course & Lesson Management
-Full CRUD operations for Courses and Lessons.
-
-Video and document resource integration support.
-
-Progress Tracking: Real-time tracking of student completion rates across lessons.
-
-📝 Assignment & Grading System
-Automated assignment distribution to enrolled students.
-
-Dynamic updates using COALESCE to allow partial data modifications without data loss.
-
-Instructor dashboard for reviewing and grading submissions.
-
-🔔 Notification System
-In-app notifications for assignment deadlines, course updates, and system alerts.
-
-Email integration for critical account actions (registration, password resets).
+RBAC: Fine-grained access control for Learners, Instructors, and Admins.
 
 🚦 Getting Started
-Prerequisites
-Node.js (v18+)
+Clone the repo: git clone https://github.com/Emmanuel8577/TalentFlow-Learning-Platform.git
 
-PostgreSQL
+Install dependencies: npm install
 
-Redis
+Set up your .env (Database URLs, Redis credentials, JWT secret).
 
-Installation
-Clone the repository:
+Start development server: npm run dev
 
-Bash
-git clone https://github.com/YourUsername/TalentFlow-Learning-Platform.git
-cd TalentFlow-Learning-Platform
-Install dependencies:
 
-Bash
-npm install
-Environment Setup:
-Create a .env file in the root and add:
+---
 
-Code snippet
-PORT=5000
-DATABASE_URL=your_postgresql_url
-REDIS_URL=your_redis_url
-JWT_SECRET=your_secret_key
-MAILER_USER=your_email
-MAILER_PASS=your_app_password
-Run Migrations:
+### ⬆️ How to Update and Push
 
-Bash
-npm run migrate
-Start the Server:
+Once you've saved the text above into your `README.md`, run these commands to update your GitHub profile:
 
-Bash
-npm run dev
-📖 API Documentation
-Once the server is running, you can access the interactive Swagger UI at:
-http://localhost:5000/api-docs
+```powershell
+# 1. Add the change
+git add README.md
 
-🤝 Contributors
-Emmanuel Edache Adikwu – Lead Backend Engineer (Auth, Logic, & Deployment)
+# 2. Commit it
+git commit -m "docs: update README with live URLs, Docker instructions, and security details"
 
-Toria (VikkyRia) – Project Coordination & Core Logic
-
-Temyl – Assignments & Certificates Module
+# 3. Push to your account
+git push origin main
