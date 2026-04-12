@@ -1,17 +1,20 @@
 const nodemailer = require('nodemailer');
-
-
-
 require('dotenv').config();
 
 const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
-    secure: true, // Use SSL
+    secure: true, 
+    pool: true, // Use pooled connections for better performance in containers
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS 
-    }
+    },
+    tls: {
+        rejectUnauthorized: false // Prevents handshake timeouts
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 5000,
 });
 
 const sendEmail = async (to, subject, text, html) => {
@@ -23,11 +26,11 @@ const sendEmail = async (to, subject, text, html) => {
             text,
             html
         });
-        console.log('📧 Message sent: %s', info.messageId);
+        console.log('📧 Email sent successfully!');
         return info;
     } catch (error) {
-        console.error('❌ Nodemailer Error:', error);
-        throw error; // Throw so the controller catches it
+        console.error('❌ Nodemailer Error:', error.message);
+        throw error; 
     }
 };
 
