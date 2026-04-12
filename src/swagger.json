@@ -81,5 +81,6 @@
       "delete": { "tags": ["Discussions"], "security": [{"bearerAuth": []}], "summary": "Delete thread", "responses": { "200": { "description": "Deleted" } } }
     },
     "/api/discussions/{id}/reply": { "post": { "tags": ["Discussions"], "security": [{"bearerAuth": []}], "summary": "Post reply", "responses": { "201": { "description": "Success" } } } }
+    
   }
 }
