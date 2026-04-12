@@ -4,13 +4,13 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const swaggerUi = require('swagger-ui-express');
 const keepAlive = require('./utils/keepAlive');
-const { error, success } = require("./utils/response"); // Moved to the top
+// Changed names to avoid any possible collision with 'error' or 'success'
+const { error: responseError, success: responseSuccess } = require("./utils/response");
 
 require("dotenv").config();
 require("./config/db");
 const migrate = require("./db/migrate");
 
-// IMPORT: Swagger documentation
 const swaggerDocument = require('./swagger.json'); 
 
 const app = express(); 
@@ -18,17 +18,14 @@ const app = express();
 // Run migrations on startup
 migrate();
 
-// Environment Detection
 const isProduction = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true';
 const PORT = process.env.PORT || 5000;
 const BASE_URL = isProduction 
   ? 'https://talentflow-backend-4dd1.onrender.com' 
   : `http://localhost:${PORT}`;
 
-// ── SWAGGER CONFIGURATION ──────────────────────────
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// ── MIDDLEWARE ─────────────────────────────────────
 app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
@@ -46,7 +43,7 @@ app.use("/api/notifications",   require("./modules/notifications/notification.ro
 app.use("/api/discussions",     require("./modules/discussions/discussion.routes"));
 
 app.get("/", (req, res) => {
-  return success(res, "TalentFlow LMS API 🎓", {
+  return responseSuccess(res, "TalentFlow LMS API 🎓", {
     status: "Server is running",
     version: "1.0.0",
     docs: `${BASE_URL}/api-docs`
@@ -55,12 +52,12 @@ app.get("/", (req, res) => {
 
 // ── ERROR HANDLERS ─────────────────────────────────
 app.use((req, res) => {
-  return error(res, "Route not found", 404);
+  return responseError(res, "Route not found", 404);
 });
 
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  return error(res, "Something went wrong on our end.", 500);
+  return responseError(res, "Something went wrong on our end.", 500);
 });
 
 // ── SERVER START ───────────────────────────────────
