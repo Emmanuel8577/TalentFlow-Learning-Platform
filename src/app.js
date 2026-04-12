@@ -4,6 +4,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const swaggerUi = require('swagger-ui-express');
 const keepAlive = require('./utils/keepAlive');
+const { error, success } = require("./utils/response"); // Moved to the top
 
 require("dotenv").config();
 require("./config/db");
@@ -32,8 +33,6 @@ app.use(helmet());
 app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
-
-const { error, success } = require("./utils/response");
 
 // ── ROUTES ─────────────────────────────────────────
 app.use("/api/auth",            require("./modules/auth/auth.routes"));
@@ -69,7 +68,6 @@ app.listen(PORT, () => {
   console.log(`TalentFlow API running on port ${PORT}`);
   console.log(`Swagger docs available at ${BASE_URL}/api-docs`);
 
-  // Start the self-ping logic to prevent Render sleep (Production Only)
   if (isProduction) {
     keepAlive(BASE_URL);
   }
