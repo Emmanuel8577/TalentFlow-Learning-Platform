@@ -5,15 +5,17 @@ const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true, 
-    pool: true, // Use pooled connections for better performance in containers
+    pool: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS 
     },
     tls: {
-        rejectUnauthorized: false // Prevents handshake timeouts
+        rejectUnauthorized: false
     },
-    connectionTimeout: 10000, // 10 seconds
+    // ⚡ THE FIX: Force IPv4 to avoid ENETUNREACH errors
+    family: 4, 
+    connectionTimeout: 10000,
     greetingTimeout: 5000,
 });
 
@@ -26,7 +28,7 @@ const sendEmail = async (to, subject, text, html) => {
             text,
             html
         });
-        console.log('📧 Email sent successfully!');
+        console.log('📧 Email sent successfully via IPv4');
         return info;
     } catch (error) {
         console.error('❌ Nodemailer Error:', error.message);
