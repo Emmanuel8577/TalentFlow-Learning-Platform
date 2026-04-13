@@ -192,10 +192,9 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// ── RESET PASSWORD ──────────────────────────────────────────────────
-// This endpoint now verifies the OTP AND updates the password in one step
-exports.resetPassword = async (req, res) => {
-  const { email, otp, newPassword } = req.body;
+// ── 1. VERIFY RESET OTP (New Step) ──────────────────────────────────
+exports.verifyResetOTP = async (req, res) => {
+  const { email, otp } = req.body;
   try {
     const storedOtp = await redisClient.get(`otp_reset:${email}`);
     
@@ -203,18 +202,42 @@ exports.resetPassword = async (req, res) => {
       return error(res, "Invalid or expired OTP", 400);
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    // Generate a temporary reset token (valid for 10 mins)
+    // This proves to the next endpoint that the OTP was already cleared
+    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '10m' });
     
-    // Update password and ensure the user is also marked as verified
+    // Store this token in Redis so the Reset endpoint can verify it
+    await redisClient.setEx(`reset_token:${email}`, 600, resetToken);
+
+    // Clean up the OTP now that it's verified
+    await redisClient.del(`otp_reset:${email}`);
+
+    return success(res, "OTP verified. You may now reset your password.", { resetToken });
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
+// ── 2. RESET PASSWORD (Updated) ─────────────────────────────────────
+exports.resetPassword = async (req, res) => {
+  const { email, resetToken, newPassword } = req.body; // Expects resetToken now, not OTP
+  try {
+    const storedToken = await redisClient.get(`reset_token:${email}`);
+    
+    if (!storedToken || storedToken !== resetToken) {
+      return error(res, "Unauthorized or session expired. Please verify OTP again.", 403);
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
     const result = await db.query(
-      "UPDATE users SET password = $1, is_verified = true WHERE email = $2",
+      "UPDATE users SET password = $1 WHERE email = $2",
       [hashedPassword, email]
     );
 
     if (result.rowCount === 0) return error(res, "User not found", 404);
 
-    // Clean up Redis
-    await redisClient.del(`otp_reset:${email}`);
+    // Final cleanup
+    await redisClient.del(`reset_token:${email}`);
     
     return success(res, "Password reset successful. You can now log in.");
   } catch (err) {
