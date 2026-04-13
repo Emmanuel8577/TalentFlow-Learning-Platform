@@ -26,52 +26,67 @@ exports.register = async (req, res) => {
 
     // 2. Determine final role (default to learner)
     const allowedRoles = ["instructor", "learner"];
-    const finalRole = role && allowedRoles.includes(role.toLowerCase()) 
-      ? role.toLowerCase() 
-      : "learner";
+    const finalRole =
+      role && allowedRoles.includes(role.toLowerCase())
+        ? role.toLowerCase()
+        : "learner";
 
     const existingUser = await db.query(
       "SELECT * FROM users WHERE email = $1",
-      [email]
+      [email],
     );
-    
+
     if (existingUser.rows.length > 0) {
       return error(res, "User already exists", 400);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    
+
     // 3. Updated SQL to include 'role'
     const result = await db.query(
       "INSERT INTO users (email, password, name, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role, is_verified",
-      [email, hashedPassword, name, finalRole]
+      [email, hashedPassword, name, finalRole],
     );
-    
+
     const user = result.rows[0];
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     await redisClient.setEx(`otp:${email}`, 600, otp);
 
     const emailContent = `<h1>Welcome to TalentFlow</h1><p>Your verification code is: <b>${otp}</b>. It expires in 10 minutes.</p>`;
-    await sendEmail(
-      email,
-      "Verify Your Account - TalentFlow",
-      `Your OTP is ${otp}`,
-      emailContent
-    );
+
+    // ⚡ FIX: Wrap the email in its own try-catch so it doesn't block the response
+    try {
+      await sendEmail(
+        email,
+        "Verify Your Account - TalentFlow",
+        `Your OTP is ${otp}`,
+        emailContent,
+      );
+      console.log(`✅ OTP sent to ${email}`);
+    } catch (mailError) {
+      console.error(
+        "❌ Registration Email failed but user was created:",
+        mailError.message,
+      );
+      // We don't return an error here because the user is already in the DB!
+      // Instead, we let them know they might need to request a resend.
+    }
 
     return success(
       res,
-      "Registration successful. OTP sent to email.",
+      "Registration successful. Please check your email for the OTP.",
       {
         user: {
           id: user.id,
           name: user.name,
           email: user.email,
-          role: user.role
+          role: user.role,
         },
+        emailNote:
+          "If you don't receive an email shortly, please check your spam or request a resend.",
       },
-      201
+      201,
     );
   } catch (err) {
     return error(res, err.message, 500);
@@ -89,13 +104,15 @@ exports.verifyOTP = async (req, res) => {
 
     const result = await db.query(
       "UPDATE users SET is_verified = true WHERE email = $1 RETURNING id, name, email, role, is_verified",
-      [email]
+      [email],
     );
 
     if (result.rowCount === 0) return error(res, "User not found", 404);
 
     await redisClient.del(`otp:${email}`);
-    return success(res, "Account verified successfully!", { user: result.rows[0] });
+    return success(res, "Account verified successfully!", {
+      user: result.rows[0],
+    });
   } catch (err) {
     return error(res, err.message, 500);
   }
@@ -105,7 +122,9 @@ exports.verifyOTP = async (req, res) => {
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
-    const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
     const user = result.rows[0];
 
     if (!user || !(await bcrypt.compare(password, user.password))) {
@@ -146,7 +165,9 @@ exports.logout = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
-    const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
     if (result.rows.length === 0) return error(res, "User not found", 404);
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -156,7 +177,7 @@ exports.forgotPassword = async (req, res) => {
       email,
       "Password Reset - TalentFlow",
       `Your reset code is ${otp}`,
-      `<p>Use this code to reset your password: <b>${otp}</b></p>`
+      `<p>Use this code to reset your password: <b>${otp}</b></p>`,
     );
 
     return success(res, "Password reset OTP sent to email");
@@ -177,7 +198,7 @@ exports.resetPassword = async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     const result = await db.query(
       "UPDATE users SET password = $1 WHERE email = $2",
-      [hashedPassword, email]
+      [hashedPassword, email],
     );
 
     if (result.rowCount === 0) return error(res, "User not found", 404);
