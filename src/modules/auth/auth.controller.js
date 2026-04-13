@@ -162,84 +162,74 @@ exports.logout = async (req, res) => {
 };
 
 // ── FORGOT PASSWORD ─────────────────────────────────────────────────
-// ── FORGOT PASSWORD ─────────────────────────────────────────────────
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
   try {
-    const result = await db.query("SELECT * FROM users WHERE email = $1", [email]);
+    const result = await db.query("SELECT * FROM users WHERE email = $1", [
+      email,
+    ]);
     if (result.rows.length === 0) return error(res, "User not found", 404);
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    
-    // Store in Redis with a specific prefix for password resets
-    await redisClient.setEx(`otp_reset:${email}`, 600, otp); // 10 mins
+    await redisClient.setEx(`otp_reset:${email}`, 600, otp);
 
     try {
       await sendEmail(
         email,
         "Password Reset - TalentFlow",
         `Your reset code is ${otp}`,
-        `<p>Use this code to reset your password: <b>${otp}</b></p>`
+        `<p>Use this code to reset your password: <b>${otp}</b></p>`,
       );
-    } catch (mailErr) {
-      // Log error but proceed so user doesn't get a 500 if the API is just slow
-      console.error("Mail Error:", mailErr.message);
+    } catch (mErr) {
+      console.error("Email API failed:", mErr.message);
     }
 
-    return success(res, "Password reset OTP sent to email. If it doesn't arrive, check spam.");
+    return success(res, "Password reset OTP sent to email");
   } catch (err) {
     return error(res, err.message, 500);
   }
 };
 
-// ── 1. VERIFY RESET OTP (New Step) ──────────────────────────────────
+// ── VERIFY RESET OTP (NEW) ──────────────────────────────────────────
 exports.verifyResetOTP = async (req, res) => {
   const { email, otp } = req.body;
   try {
     const storedOtp = await redisClient.get(`otp_reset:${email}`);
-    
     if (!storedOtp || storedOtp !== otp) {
-      return error(res, "Invalid or expired OTP", 400);
+      return error(res, "Invalid or expired OTP code", 400);
     }
 
-    // Generate a temporary reset token (valid for 10 mins)
-    // This proves to the next endpoint that the OTP was already cleared
-    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '10m' });
-    
-    // Store this token in Redis so the Reset endpoint can verify it
+    const resetToken = jwt.sign({ email }, process.env.JWT_SECRET, {
+      expiresIn: "10m",
+    });
     await redisClient.setEx(`reset_token:${email}`, 600, resetToken);
-
-    // Clean up the OTP now that it's verified
     await redisClient.del(`otp_reset:${email}`);
 
-    return success(res, "OTP verified. You may now reset your password.", { resetToken });
+    return success(res, "OTP verified. Proceed to reset password.", {
+      resetToken,
+    });
   } catch (err) {
     return error(res, err.message, 500);
   }
 };
 
-// ── 2. RESET PASSWORD (Updated) ─────────────────────────────────────
+// ── RESET PASSWORD (UPDATED) ────────────────────────────────────────
 exports.resetPassword = async (req, res) => {
-  const { email, resetToken, newPassword } = req.body; // Expects resetToken now, not OTP
+  const { email, resetToken, newPassword } = req.body;
   try {
     const storedToken = await redisClient.get(`reset_token:${email}`);
-    
     if (!storedToken || storedToken !== resetToken) {
-      return error(res, "Unauthorized or session expired. Please verify OTP again.", 403);
+      return error(res, "Invalid or expired reset session", 403);
     }
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    const result = await db.query(
-      "UPDATE users SET password = $1 WHERE email = $2",
-      [hashedPassword, email]
-    );
+    await db.query("UPDATE users SET password = $1 WHERE email = $2", [
+      hashedPassword,
+      email,
+    ]);
 
-    if (result.rowCount === 0) return error(res, "User not found", 404);
-
-    // Final cleanup
     await redisClient.del(`reset_token:${email}`);
-    
-    return success(res, "Password reset successful. You can now log in.");
+    return success(res, "Password reset successfully. You can now log in.");
   } catch (err) {
     return error(res, err.message, 500);
   }
