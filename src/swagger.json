@@ -1,0 +1,336 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "TalentFlow API",
+    "version": "1.0.0",
+    "description": "Comprehensive LMS Backend Documentation"
+  },
+  "servers": [
+    {
+      "url": "https://talentflow-backend-4dd1.onrender.com",
+      "description": "Production Server"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "paths": {
+    "/api/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register new user",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "User login",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "User logout",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/auth/forgot-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Verify email existence for reset",
+        "responses": { "200": { "description": "Email verified" } }
+      }
+    },
+    "/api/auth/reset-password": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Final Password Reset",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": { "type": "string" },
+                  "newPassword": { "type": "string" }
+                },
+                "required": ["email", "newPassword"]
+              }
+            }
+          }
+        },
+        "responses": { "200": { "description": "Password updated" } }
+      }
+    },
+    "/api/users/profile": {
+      "get": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get own profile",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "patch": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Update own profile",
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+    "/api/users": {
+      "get": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get all users (Admin)",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/users/{id}": {
+      "get": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get user by ID (Admin)",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/users/{id}/role": {
+      "patch": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Update user role (Admin)",
+        "responses": { "200": { "description": "Role updated" } }
+      }
+    },
+    "/api/users/{id}/progress": {
+      "get": {
+        "tags": ["Users"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get specific user progress",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/courses": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "List all courses",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "post": {
+        "tags": ["Courses"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create course (Instructor/Admin)",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/courses/{id}": {
+      "get": {
+        "tags": ["Courses"],
+        "summary": "Get course details",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "patch": {
+        "tags": ["Courses"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Update course",
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Courses"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Delete course",
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+    "/api/courses/{id}/enroll": {
+      "post": {
+        "tags": ["Courses"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Enroll in course",
+        "responses": { "200": { "description": "Enrolled" } }
+      }
+    },
+    "/api/courses/{id}/enrollees": {
+      "get": {
+        "tags": ["Courses"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get course students",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/courses/{id}/lessons": {
+      "get": {
+        "tags": ["Lessons"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get all course lessons",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "post": {
+        "tags": ["Lessons"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Add lesson",
+        "responses": { "201": { "description": "Added" } }
+      }
+    },
+    "/api/courses/{id}/lessons/{lessonId}": {
+      "get": {
+        "tags": ["Lessons"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get lesson details",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "patch": {
+        "tags": ["Lessons"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Update lesson",
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Lessons"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Delete lesson",
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+    "/api/courses/{id}/lessons/{lessonId}/complete": {
+      "post": {
+        "tags": ["Lessons"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Mark lesson complete",
+        "responses": { "200": { "description": "Done" } }
+      }
+    },
+    "/api/assignments/courses/{id}/assignments": {
+      "get": {
+        "tags": ["Assignments"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get course assignments",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "post": {
+        "tags": ["Assignments"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create assignment",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/assignments/{id}": {
+      "get": {
+        "tags": ["Assignments"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get assignment details",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "patch": {
+        "tags": ["Assignments"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Update assignment",
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Assignments"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Delete assignment",
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+    "/api/progress/progress": {
+      "get": {
+        "tags": ["Progress"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "My global progress",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/progress/progress/courses/{courseId}": {
+      "get": {
+        "tags": ["Progress"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Course specific progress",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/notifications": {
+      "get": {
+        "tags": ["Notifications"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get my notifications",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/notifications/{id}/read": {
+      "patch": {
+        "tags": ["Notifications"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Mark as read",
+        "responses": { "200": { "description": "Updated" } }
+      }
+    },
+    "/api/notifications/{id}": {
+      "delete": {
+        "tags": ["Notifications"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Delete notification",
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/api/certificates/certificates": {
+      "get": {
+        "tags": ["Certificates"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "My certificates",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/certificates/certificates/{id}": {
+      "get": {
+        "tags": ["Certificates"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get certificate details",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
+    "/api/discussions": {
+      "get": {
+        "tags": ["Discussions"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get discussion threads",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "post": {
+        "tags": ["Discussions"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Create thread",
+        "responses": { "201": { "description": "Created" } }
+      }
+    },
+    "/api/discussions/{id}": {
+      "get": {
+        "tags": ["Discussions"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Get thread details",
+        "responses": { "200": { "description": "Success" } }
+      },
+      "delete": {
+        "tags": ["Discussions"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Delete thread",
+        "responses": { "200": { "description": "Deleted" } }
+      }
+    },
+    "/api/discussions/{id}/reply": {
+      "post": {
+        "tags": ["Discussions"],
+        "security": [{ "bearerAuth": [] }],
+        "summary": "Post reply",
+        "responses": { "201": { "description": "Success" } }
+      }
+    }
+  }
+}
