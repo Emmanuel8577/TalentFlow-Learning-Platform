@@ -3,11 +3,9 @@ const router = express.Router();
 const authController = require("./auth.controller");
 
 router.post("/register", authController.register);
-//router.post("/verify-otp", authController.verifyOTP);
 router.post("/login", authController.login);
-router.post("/logout", authController.logout);
+router.post("/logout", authController.logout); // This is Line 8 - now it will find the function!
 router.post("/forgot-password", authController.forgotPassword);
-//router.post("/verify-reset-otp", authController.verifyResetOTP); 
-router.post("/reset-password", authController.resetPassword);   
+router.post("/reset-password", authController.resetPassword); 
 
 module.exports = router;

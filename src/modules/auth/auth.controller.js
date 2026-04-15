@@ -65,6 +65,16 @@ exports.login = async (req, res) => {
   }
 };
 
+// ── LOGOUT ──────────────────────────────────────────────────────────
+exports.logout = async (req, res) => {
+  try {
+    // If you're using cookies, clear them here. Otherwise, just return success.
+    return success(res, "Logged out successfully");
+  } catch (err) {
+    return error(res, err.message, 500);
+  }
+};
+
 // ── FORGOT PASSWORD (Simple Email Check) ───────────────────────────
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;

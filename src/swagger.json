@@ -28,7 +28,13 @@
         "responses": { "201": { "description": "Created" } }
       }
     },
-    
+    "/api/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "User login",
+        "responses": { "200": { "description": "Success" } }
+      }
+    },
     "/api/auth/logout": {
       "post": {
         "tags": ["Auth"],
@@ -39,8 +45,8 @@
     "/api/auth/forgot-password": {
       "post": {
         "tags": ["Auth"],
-        "summary": "Request password reset (Sends OTP)",
-        "responses": { "200": { "description": "Email sent" } }
+        "summary": "Verify email existence for reset",
+        "responses": { "200": { "description": "Email verified" } }
       }
     },
     "/api/auth/reset-password": {
@@ -54,9 +60,9 @@
                 "type": "object",
                 "properties": {
                   "email": { "type": "string" },
-                  "resetToken": { "type": "string" },
                   "newPassword": { "type": "string" }
-                }
+                },
+                "required": ["email", "newPassword"]
               }
             }
           }
