@@ -16,7 +16,6 @@ const CourseModel = {
        FROM courses c
        JOIN users u ON c.instructor_id = u.id
        LEFT JOIN enrollments e ON e.course_id = c.id
-       WHERE c.is_published = true
        GROUP BY c.id, u.name
        ORDER BY c.created_at DESC`
     );

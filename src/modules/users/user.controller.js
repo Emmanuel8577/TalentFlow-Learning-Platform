@@ -18,16 +18,32 @@ const UserController = {
   },
 
   // PATCH /api/users/profile
+  // PATCH /api/users/profile
   async updateProfile(req, res) {
     try {
-      const { name, avatar } = req.body;
+      const { 
+        name, 
+        phone, 
+        bio, 
+        location, 
+        profile_link, 
+        skills, 
+        dob, 
+        avatar 
+      } = req.body;
 
-      if (!name && !avatar) {
+      if (!name && !phone && !bio && !location && !profile_link && !skills && !dob && !avatar) {
         return error(res, "Please provide at least one field to update");
       }
 
       const user = await UserModel.updateProfile(req.user.id, {
         name,
+        phone,
+        bio,
+        location,
+        profile_link,
+        skills,
+        dob,
         avatar,
       });
 
