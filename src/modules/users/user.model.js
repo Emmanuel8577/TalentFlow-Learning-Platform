@@ -28,15 +28,22 @@ const UserModel = {
   },
 
   // Update user profile
-  async updateProfile(id, { name, avatar }) {
+  // Update user profile
+async updateProfile(id, { name, phone, bio, location, profile_link, skills, dob, avatar }) {
     const result = await db.query(
       `UPDATE users 
-       SET name = COALESCE($1, name), 
-           avatar = COALESCE($2, avatar),
+       SET name = COALESCE($1, name),
+           phone = COALESCE($2, phone),
+           bio = COALESCE($3, bio),
+           location = COALESCE($4, location),
+           profile_link = COALESCE($5, profile_link),
+           skills = COALESCE($6, skills),
+           dob = COALESCE($7, dob),
+           avatar = COALESCE($8, avatar),
            updated_at = NOW()
-       WHERE id = $3
-       RETURNING id, name, email, role, avatar, is_verified, created_at`,
-      [name, avatar, id]
+       WHERE id = $9
+       RETURNING id, name, email, phone, bio, location, profile_link, skills, dob, avatar, role, is_verified, created_at`,
+      [name, phone, bio, location, profile_link, skills, dob, avatar, id]
     );
     return result.rows[0];
   },
